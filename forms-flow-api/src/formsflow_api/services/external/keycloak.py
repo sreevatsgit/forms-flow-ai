@@ -90,6 +90,12 @@ class KeycloakAdminAPIService:
         for group in group_list_response:
             if group["name"] == KEYCLOAK_DASHBOARD_BASE_GROUP:
                 dashboard_group_list = list(group["subGroups"])
+                for dashboard_group in dashboard_group_list:
+                    dashboard_group["dashboards"] = (
+                        self.get_request(url_path=f"groups/{dashboard_group['id']}")
+                        .get("attributes")
+                        .get("dashboards")
+                    )
         return dashboard_group_list
 
     def get_analytics_roles(self, page_no: int, limit: int):
@@ -109,7 +115,13 @@ class KeycloakAdminAPIService:
         current_app.logger.debug("Client roles %s", roles)
         for client_role in roles:
             if client_role["name"] not in FORMSFLOW_ROLES:
-                client_role["path"] = client_role["name"]
+                client_role["dashboards"] = (
+                    self.get_request(
+                        url_path=f"roles-by-id/{client_role['id']}?client={client_id}"
+                    )
+                    .get("attributes")
+                    .get("dashboards")
+                )
                 dashboard_roles_list.append(client_role)
         current_app.logger.debug("dashboard_roles_list %s", dashboard_roles_list)
         return dashboard_roles_list

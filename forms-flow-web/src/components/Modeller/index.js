@@ -14,7 +14,7 @@ import {
   createNewProcess,
   extractDataFromDiagram,
 } from "./helpers/helper";
-import "./Modeler.scss";
+import "./Modeller.scss";
 
 import {
   fetchAllBpmProcesses,
@@ -33,14 +33,14 @@ export default React.memo(() => {
   const dmn = useSelector((state) => state.process.dmnProcessList);
   const [processList, setProcessList] = useState(listProcess(process));
   const workflow = useSelector((state) => state.process.workflowAssociated);
-  const [showModeler, setShowModeler] = useState(false);
+  const [showModeller, setShowModeller] = useState(false);
   const [isBpmnModel, setIsBpmnModel] = useState(true);
   const [isNewDiagram, setIsNewDiagram] = useState(false);
   const tenantKey = useSelector((state) => state.tenants?.tenantId);
 
   useEffect(() => {
     setIsNewDiagram(false);
-    setShowModeler(false);
+    setShowModeller(false);
     dispatch(setWorkflowAssociation(null));
     dispatch(fetchAllBpmProcesses(tenantKey));
   }, []);
@@ -59,7 +59,7 @@ export default React.memo(() => {
 
   const handleListChange = (item) => {
     setIsNewDiagram(false);
-    setShowModeler(true);
+    setShowModeller(true);
     dispatch(setWorkflowAssociation(item));
     dispatch(setProcessDiagramXML(null));
     showChosenFileName(item);
@@ -109,11 +109,11 @@ export default React.memo(() => {
     };
     dispatch(setWorkflowAssociation(newWorkflow));
     dispatch(setProcessDiagramXML(newWorkflow.xml));
-    setShowModeler(true);
+    setShowModeller(true);
   };
 
   const handleChangeFile = (file) => {
-    setShowModeler(false);
+    setShowModeller(false);
     setIsNewDiagram(true);
     let fileData = new FileReader();
     try {
@@ -131,13 +131,13 @@ export default React.memo(() => {
     const newProcess = isBpmnModel ? createNewProcess() : createNewDecision();
     dispatch(setWorkflowAssociation(newProcess.defaultWorkflow));
     dispatch(setProcessDiagramXML(newProcess.defaultWorkflow.xml));
-    setShowModeler(true);
+    setShowModeller(true);
     document.getElementById("inputWorkflow").value = null;
   };
 
   const handleToggle = () => {
     setIsNewDiagram(false);
-    setShowModeler(false);
+    setShowModeller(false);
     dispatch(setWorkflowAssociation(null));
     setIsBpmnModel((toggle) => !toggle);
     document.getElementById("inputWorkflow").value = null;
@@ -147,18 +147,11 @@ export default React.memo(() => {
     console.log(message, err);
     document.getElementById("inputWorkflow").value = null;
     dispatch(setWorkflowAssociation(null));
-    setShowModeler(false);
+    setShowModeller(false);
   };
 
   const handleHelp = () => {
     window.open("https://camunda.com/bpmn/");
-  };
-
-  const customDropdownStyles = {
-    menuList: base => ({
-      ...base,
-      maxHeight: "170px",
-    })
   };
 
   return (
@@ -178,6 +171,7 @@ export default React.memo(() => {
           </div>
         </div>
       </div>
+
       <Grid
         container
         direction="row"
@@ -200,16 +194,16 @@ export default React.memo(() => {
                 </span>
                 <div className="select-style">
                   <Select
-                    placeholder={t("Select ...")}
+                    placeholder={t("Select...")}
+                    dropdownHeight={"135px"}
                     options={processList}
                     onChange={handleListChange}
                     value={
                       processList.length && workflow?.value ? workflow : ""
                     }
-                    styles={customDropdownStyles}
                   />
                 </div>
-                <div className="mt-2 toggle-bpm">
+                <div className="mt-2">
                   <label className="switch">
                     <input
                       type="checkbox"
@@ -225,21 +219,23 @@ export default React.memo(() => {
                   </label>
                 </div>
               </Grid>
-              <div className="mt-2">
+
+              <div className="create-import-container">
                 <span className="fontsize-16">
                   {t(
                     "Or create new workflow or import a workflow from a local directory."
                   )}
                 </span>
 
-                <div className="create-import-btns-container mt-2 mb-4">
+                <div className="create-import-btns-container">
                   <Button
-                    className="btn-create-new mr-3"
+                    className="btn-create-new"
                     onClick={() => handleCreateNew()}
                   >
                     {t("Create New")}
                   </Button>
 
+                  <span className="fontsize-16 or-txt">{t(" ")}</span>
                   <input
                     id="inputWorkflow"
                     type="file"
@@ -249,18 +245,18 @@ export default React.memo(() => {
                 </div>
               </div>
 
-              {processList.length && workflow?.value && showModeler ? (
+              {processList.length && workflow?.value && showModeller ? (
                 <div>
                   {isBpmnModel ? (
                     <BpmnEditor
-                      setShowModeler={setShowModeler}
+                      setShowModeller={setShowModeller}
                       processKey={workflow?.value}
                       tenant={workflow?.tenant}
                       isNewDiagram={isNewDiagram}
                     />
                   ) : (
                     <DmnEditor
-                      setShowModeler={setShowModeler}
+                      setShowModeller={setShowModeller}
                       processKey={workflow?.value}
                       tenant={workflow?.tenant}
                       isNewDiagram={isNewDiagram}

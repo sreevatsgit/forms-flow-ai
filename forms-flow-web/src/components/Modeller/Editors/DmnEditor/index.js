@@ -8,9 +8,8 @@ import { extractDataFromDiagram } from "../../helpers/helper";
 import { createXML } from "../../helpers/deploy";
 import { MULTITENANCY_ENABLED } from "../../../../constants/constants";
 import { deployBpmnDiagram } from "../../../../apiManager/services/bpmServices";
-import Loading from "../../../../containers/Loading";
 
-import { SUCCESS_MSG, ERROR_MSG } from "../../constants/bpmnModelerConstants";
+import { SUCCESS_MSG, ERROR_MSG } from "../../constants/bpmnModellerConstants";
 
 import {
   fetchAllDmnProcesses,
@@ -35,45 +34,39 @@ import {
 import camundaModdleDescriptor from "camunda-dmn-moddle/resources/camunda";
 
 export default React.memo(
-  ({ setShowModeler, processKey, tenant, isNewDiagram }) => {
+  ({ setShowModeller, processKey, tenant, isNewDiagram }) => {
     const { t } = useTranslation();
 
     const dispatch = useDispatch();
     const diagramXML = useSelector((state) => state.process.processDiagramXML);
-    const [dmnModeler, setBpmnModeler] = useState(null);
+    const [dmnModeller, setBpmnModeller] = useState(null);
     const tenantKey = useSelector((state) => state.tenants?.tenantId);
     const [applyAllTenants, setApplyAllTenants] = useState(false);
-    const [deploymentLoading, setDeploymentLoading] = useState(false);
 
     const containerRef = useCallback((node) => {
       if (node !== null) {
-        initializeModeler();
+        setBpmnModeller(
+          new DmnJS({
+            container: "#canvas",
+            drd: {
+              propertiesPanel: {
+                parent: "#js-properties-panel",
+              },
+              additionalModules: [
+                DmnPropertiesPanelModule,
+                DmnPropertiesProviderModule,
+                CamundaPropertiesProviderModule,
+              ],
+            },
+            moddleExtensions: {
+              camunda: camundaModdleDescriptor,
+            },
+          })
+        );
       }
     }, []);
 
-    const initializeModeler = () => {
-      setBpmnModeler(
-        new DmnJS({
-          container: "#canvas",
-          drd: {
-            propertiesPanel: {
-              parent: "#js-properties-panel",
-            },
-            additionalModules: [
-              DmnPropertiesPanelModule,
-              DmnPropertiesProviderModule,
-              CamundaPropertiesProviderModule,
-            ],
-          },
-          moddleExtensions: {
-            camunda: camundaModdleDescriptor,
-          },
-        })
-      );
-    };
-
     useEffect(() => {
-      tenant === null ? setApplyAllTenants(true) : setApplyAllTenants(false);
       if (diagramXML) {
         dispatch(setProcessDiagramLoading(true));
         dispatch(setProcessDiagramXML(diagramXML));
@@ -90,8 +83,8 @@ export default React.memo(
     }, [processKey, tenant, dispatch]);
 
     useEffect(() => {
-      if (diagramXML && dmnModeler) {
-        dmnModeler
+      if (diagramXML && dmnModeller) {
+        dmnModeller
           .importXML(diagramXML)
           .then(({ warnings }) => {
             if (warnings.length) {
@@ -99,8 +92,8 @@ export default React.memo(
             }
 
             try {
-              dmnModeler.on("views.changed", () => {
-                const propertiesPanel = dmnModeler
+              dmnModeller.on("views.changed", () => {
+                const propertiesPanel = dmnModeller
                   .getActiveViewer()
                   .get("propertiesPanel", false);
 
@@ -116,7 +109,7 @@ export default React.memo(
                     "d-flex justify-content-end zoom-container";
                 }
               });
-              setShowModeler(true);
+              setShowModeller(true);
             } catch (err) {
               handleError(err, "DMN Properties Panel Error: ");
             }
@@ -125,13 +118,14 @@ export default React.memo(
             handleError(err, "DMN Import Error: ");
           });
       }
-    }, [diagramXML, dmnModeler]);
+    }, [diagramXML, dmnModeller]);
 
     const handleApplyAllTenants = () => {
       setApplyAllTenants(!applyAllTenants);
     };
+
     const deployProcess = async () => {
-      let xml = await createXML(dmnModeler);
+      let xml = await createXML(dmnModeller);
       // Deploy to Camunda
       deployXML(xml);
     };
@@ -169,8 +163,7 @@ export default React.memo(
           if (res?.data) {
             toast.success(t(SUCCESS_MSG));
             // Reload the dropdown menu
-            updateDmnProcesses(xml, res.data.deployedDecisionDefinitions);
-            refreshModeller();
+            updateBpmProcesses(xml);
           } else {
             toast.error(t(ERROR_MSG));
           }
@@ -178,13 +171,6 @@ export default React.memo(
         .catch((error) => {
           showCamundaHTTTPErrors(error);
         });
-    };
-
-    const refreshModeller = () => {
-      dmnModeler.destroy();
-      setDeploymentLoading(true);
-      initializeModeler();
-      setDeploymentLoading(false);
     };
 
     const showCamundaHTTTPErrors = (error) => {
@@ -204,7 +190,7 @@ export default React.memo(
       }
     };
 
-    const updateDmnProcesses = (xml, deployedDecisionDefinitions) => {
+    const updateBpmProcesses = (xml) => {
       // Update drop down with all processes
       dispatch(fetchAllDmnProcesses(tenantKey));
       // Show the updated workflow as the current value in the dropdown
@@ -212,7 +198,6 @@ export default React.memo(
         label: extractDataFromDiagram(xml, true).name,
         value: extractDataFromDiagram(xml, true).processId,
         xml: xml,
-        deployedDefinitions: deployedDecisionDefinitions
       };
       dispatch(setWorkflowAssociation(updatedWorkflow));
     };
@@ -231,7 +216,7 @@ export default React.memo(
     };
 
     const handleExport = async () => {
-      let xml = await createXML(dmnModeler);
+      let xml = await createXML(dmnModeller);
 
       const isValidated = validateDecisionNames(xml);
       if (isValidated) {
@@ -249,18 +234,18 @@ export default React.memo(
     const handleError = () => {
       document.getElementById("inputWorkflow").value = null;
       dispatch(setWorkflowAssociation(null));
-      setShowModeler(false);
+      setShowModeller(false);
     };
 
     const zoom = () => {
-      dmnModeler.getActiveViewer().get("zoomScroll").stepZoom(1);
+      dmnModeller.getActiveViewer().get("zoomScroll").stepZoom(1);
     };
 
     const zoomOut = () => {
-      dmnModeler.getActiveViewer().get("zoomScroll").stepZoom(-1);
+      dmnModeller.getActiveViewer().get("zoomScroll").stepZoom(-1);
     };
     const zoomReset = () => {
-      dmnModeler.getActiveViewer().get("zoomScroll").reset();
+      dmnModeller.getActiveViewer().get("zoomScroll").reset();
     };
 
     return (
@@ -270,13 +255,11 @@ export default React.memo(
             <div
               id="canvas"
               ref={containerRef}
-              className="bpm-modeler-container"
+              className="bpm-modeller-container"
               style={{
                 border: "1px solid #000000",
               }}
-            >
-              {!deploymentLoading ? null : <Loading />}
-            </div>
+            ></div>
             <div
               className="d-flex justify-content-end zoom-container"
               id="zoom-id"
@@ -315,7 +298,7 @@ export default React.memo(
         <div>
           {MULTITENANCY_ENABLED ? (
             <label className="deploy-checkbox">
-              <input type="checkbox" checked={applyAllTenants ? true : false} onClick={handleApplyAllTenants} /> Apply
+              <input type="checkbox" onClick={handleApplyAllTenants} /> Apply
               for all tenants
             </label>
           ) : null}

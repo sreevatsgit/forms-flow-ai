@@ -56,13 +56,13 @@ class BPMService(BaseBPMService):
         return cls.get_request(url, token)
 
     @classmethod
-    def post_process_start(cls, process_key, payload, token, tenant_key):
+    def post_process_start(cls, process_key, payload, token):
         """Post process start."""
         url = (
             f"{cls._get_url_(BPMEndpointType.PROCESS_DEFINITION)}/"
             f"key/{process_key}/start"
         )
-        return cls.post_request(url, token, payload=payload, tenant_key=tenant_key)
+        return cls.post_request(url, token, payload=payload)
 
     @classmethod
     def post_process_start_tenant(

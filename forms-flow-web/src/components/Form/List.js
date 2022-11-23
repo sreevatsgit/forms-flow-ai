@@ -83,13 +83,12 @@ const List = React.memo((props) => {
   const [showClearButton, setShowClearButton] = useState("");
   const [isAscend, setIsAscending] = useState(false);
   const [previousForms, setPreviousForms] = useState({});
-  const searchText = useSelector((state) => state.bpmForms.searchText);
-  const [searchTextInput, setSearchTextInput] = useState(searchText);
   const [isLoading, setIsLoading] = React.useState(false);
 
    const query = useSelector((state) => state.forms.query);
   const isDesigner = userRoles.includes(STAFF_DESIGNER);
   const bpmForms = useSelector((state) => state.bpmForms);
+  const searchText = useSelector((state) => state.bpmForms.searchText);
   const pageNo = useSelector((state) => state.bpmForms.page);
   const limit = useSelector((state) => state.bpmForms.limit);
   const totalForms = useSelector((state) => state.bpmForms.totalForms);
@@ -211,7 +210,6 @@ const List = React.memo((props) => {
   };
   const onClear = () => {
     dispatch(setFormSearchLoading(true));
-    setSearchTextInput("");
     searchInputBox.current.value = "";
     setShowClearButton(false);
     handleSearch();
@@ -222,7 +220,7 @@ const List = React.memo((props) => {
     setIsAscending(!isAscend);
     let updatedQuery = { query: { ...query } };
     if (isDesigner) {
-      updatedQuery = `${isAscend ? "" : "-"}title`;
+      updatedQuery = `${isAscend ? "-" : ""}title`;
       dispatch(setBPMFormListSort(updatedQuery));
     } else {
       const updatedQuery = isAscend ? 'asc' : "desc";
@@ -475,13 +473,11 @@ const List = React.memo((props) => {
                       }
                       onChange={(e) => {
                         setShowClearButton(e.target.value);
-                        setSearchTextInput(e.target.value);
                         e.target.value === "" && handleSearch();
                       }}
                       autoComplete="off"
                       className="form-control"
-                      value={searchTextInput}
-                      placeholder={t("Search...")}
+                      placeholder={t(searchText ? searchText : "Search...")}
                     />
                   </div>
                   {showClearButton && (

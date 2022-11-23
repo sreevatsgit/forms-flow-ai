@@ -8,7 +8,6 @@ import { createMemoryHistory } from "history";
 import * as redux from "react-redux";
 import StoreService from "../../../services/StoreService";
 import { initialstate } from "./constants";
-import { MULTITENANCY_ENABLED } from "../../../constants/constants";
 let store;
 beforeEach(() => {
   store = StoreService.configureStore();
@@ -34,8 +33,6 @@ function renderWithRouterMatch(
 }
 
 it("should render the serviceflow index component without breaking", async () => {
- if(!MULTITENANCY_ENABLED)
- {
   const spy = jest.spyOn(redux, "useSelector");
   spy.mockImplementation((callback) => callback(initialstate));
   renderWithRouterMatch(Index, {
@@ -50,4 +47,4 @@ it("should render the serviceflow index component without breaking", async () =>
   expect(screen.getByText("Set follow-up Date")).toBeInTheDocument();
   expect(screen.getByText("Set Due date")).toBeInTheDocument();
   expect(screen.getAllByText("Review Submission")).toHaveLength(2);
-}});
+});

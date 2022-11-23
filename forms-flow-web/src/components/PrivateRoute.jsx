@@ -20,7 +20,7 @@ const DashboardPage = lazy(() => import("./Dashboard"));
 const InsightsPage = lazy(() => import("./Insights"));
 const Application = lazy(() => import("./Application"));
 const Admin = lazy(() => import("./Admin"));
-const Modeler = lazy(() => import("./Modeler")); //BPMN Modeler
+const Modeller = lazy(() => import("./Modeller")); //BPMN Modeller
 const Drafts = lazy(() => import("./Draft"));
 
 const PrivateRoute = React.memo((props) => {
@@ -142,7 +142,7 @@ const PrivateRoute = React.memo((props) => {
             <DesignerRoute path={`${BASE_ROUTE}formflow`} component={Form} />
             <DesignerRoute
               path={`${BASE_ROUTE}processes`}
-              component={Modeler}
+              component={Modeller}
             />
             <ClientReviewerRoute
               path={`${BASE_ROUTE}application`}

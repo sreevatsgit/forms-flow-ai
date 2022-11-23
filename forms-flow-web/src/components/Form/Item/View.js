@@ -110,11 +110,8 @@ const View = React.memo((props) => {
     onCustomEvent,
     errors,
     options,
-    form: { form, isActive, url, error },
+    form: { form, isActive, url },
   } = props;
-
-  const [isValidResource, setIsValidResource] = useState(false);
-
   const dispatch = useDispatch();
   /*
   Selecting which endpoint to use based on authentication status,
@@ -183,7 +180,10 @@ const View = React.memo((props) => {
         dispatch(
           draftUpdateMethod(payload, draftSubmissionId, (err) => {
             if (exitType === "UNMOUNT" && !err) {
-              toast.success(t("Submission saved to draft."));
+              toast.success(
+                 t("Submission saved to draft.")
+                  
+                );
             }
             if (!err) {
               setDraftSaved(true);
@@ -195,11 +195,6 @@ const View = React.memo((props) => {
       }
     }
   };
-
-  useEffect(() => {
-    if (form._id && !error) setIsValidResource(true);
-    return () => setIsValidResource(false);
-  }, [error, form._id]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -220,14 +215,13 @@ const View = React.memo((props) => {
     if (
       validFormId &&
       DRAFT_ENABLED &&
-      isValidResource &&
       ((isAuthenticated && formStatus === "active") ||
         (!isAuthenticated && publicFormStatus?.status == "active"))
     ) {
       let payload = getDraftReqFormat(validFormId, draftData?.data);
       dispatch(draftCreateMethod(payload, setIsDraftCreated));
     }
-  }, [validFormId, formStatus, publicFormStatus, isValidResource]);
+  }, [validFormId, formStatus, publicFormStatus]);
 
   /**
    * We will repeatedly update the current state to draft table
@@ -313,9 +307,7 @@ const View = React.memo((props) => {
   }
   return (
     <div className="container overflow-y-auto">
-      {DRAFT_ENABLED &&
-        isAuthenticated &&
-        isValidResource && 
+      {DRAFT_ENABLED && isAuthenticated &&
         (formStatus === "active" ||
           (publicFormStatus?.anonymous === true &&
             publicFormStatus?.status === "active")) && (
@@ -324,19 +316,13 @@ const View = React.memo((props) => {
               {!notified && (
                 <span className="text-primary">
                   <i className="fa fa-info-circle mr-2" aria-hidden="true"></i>
-                  {t(
-                    "Unfinished applications will be saved to Applications/Drafts."
-                  )}
+                  {t("Unfinished applications will be saved to drafts.")}
                 </span>
               )}
 
               {notified && poll && (
                 <SavingLoading
-                  text={
-                    draftSaved
-                      ? t("Saved to Applications/Drafts")
-                      : t("Saving...")
-                  }
+                  text={draftSaved ? t("Saved to draft") : t("Saving...")}
                   saved={draftSaved}
                 />
               )}
@@ -359,8 +345,8 @@ const View = React.memo((props) => {
           {form.title ? (
             <h3 className="ml-3">
               <span className="task-head-details">
-                <i className="fa fa-wpforms" aria-hidden="true" /> &nbsp;{" "}
-                {t("Forms")}/
+                <i className="fa fa-wpforms" aria-hidden="true" /> &nbsp; {t("Forms")}
+                /
               </span>{" "}
               {form.title}
             </h3>

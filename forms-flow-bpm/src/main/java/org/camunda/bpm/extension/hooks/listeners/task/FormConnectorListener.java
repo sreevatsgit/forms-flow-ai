@@ -17,12 +17,13 @@ import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static org.camunda.bpm.extension.commons.utils.VariableConstants.FORM_URL;
@@ -33,8 +34,6 @@ import static org.camunda.bpm.extension.commons.utils.VariableConstants.FORM_URL
  */
 @Component
 public class FormConnectorListener extends BaseListener implements TaskListener {
-
-    private final Logger LOGGER = Logger.getLogger(FormConnectorListener.class.getName());
 
     private Expression fields;
     private Expression copyDataIndicator;
@@ -125,12 +124,9 @@ public class FormConnectorListener extends BaseListener implements TaskListener 
                 .collect(Collectors.toList());
 
 
-        if (CollectionUtils.isNotEmpty(userTaskExtensionProperties)) {
+        if(CollectionUtils.isNotEmpty(userTaskExtensionProperties)) {
             String formName = userTaskExtensionProperties.get(0).getCamundaValue();
-            if (StringUtils.startsWith(formName, "$")) {
-                formName = String.valueOf(delegateTask.getExecution().getVariable(StringUtils.substringBetween(formName, "${", "}")));
-            }
-            return formSubmissionService.getFormIdByName(StringUtils.substringBefore(getFormUrl(delegateTask), "/form/") + "/" + formName);
+            return formSubmissionService.getFormIdByName(StringUtils.substringBefore(getFormUrl(delegateTask),"/form/")+"/"+formName);
         }
 
         return null;

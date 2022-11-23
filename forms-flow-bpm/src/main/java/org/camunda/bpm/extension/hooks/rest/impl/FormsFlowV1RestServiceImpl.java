@@ -64,9 +64,4 @@ public class FormsFlowV1RestServiceImpl {
         return new DecisionDefinitionRestResourceImpl(processEngineService.getDecisionDefinitionRestService());
     }
 
-    @Path(VersionRestResource.PATH)
-    public VersionRestResource getVersion() {
-        return new VersionRestResourceImpl(processEngineService.getVersionRestService());
-    }
-
 }

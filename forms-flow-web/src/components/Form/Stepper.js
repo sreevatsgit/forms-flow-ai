@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import Create from "./Create.js";
 import Preview from "./Item/Preview.js";
 import Edit from "./Item/Edit.js";
-import { Translation, withTranslation } from "react-i18next";
+import { Translation } from "react-i18next";
 import "../../resourceBundles/i18n";
 
 //TODO convert this code to functional component
@@ -338,7 +338,7 @@ class StepperPage extends PureComponent {
   render() {
     // const { process } = this.props;
     const steps = this.getSteps();
-    const {t} = this.props;
+
     const handleReset = () => {
       this.setActiveStep(0);
     };
@@ -349,7 +349,9 @@ class StepperPage extends PureComponent {
           {this.props.isAuthenticated ? (
             <Link
               to={`${this.state.redirectUrl}form`}
-              title={ t("Back to Form List")}
+              title={<Translation >
+              {(t) => t("Back to Form List")}
+            </Translation>}
             >
               <i className="fa fa-chevron-left fa-lg m-3" />
             </Link>
@@ -467,4 +469,4 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(withTranslation()(StepperPage));
+export default connect(mapStateToProps, mapDispatchToProps)(StepperPage);
